@@ -1,11 +1,23 @@
 import streamlit as st
-from .data_fetcher import fetch_exchange_rate
+import yfinance as yf
 
 
 CURRENCIES = {
     "USD": {"symbol": "$",  "code": "USD"},
     "PKR": {"symbol": "₨", "code": "PKR"},
 }
+
+
+def _fetch_exchange_rate(to_currency: str) -> float:
+    """Fetch live USD to target currency exchange rate."""
+    try:
+        ticker = yf.Ticker(f"{to_currency}=X")
+        hist = ticker.history(period="2d")
+        if not hist.empty:
+            return float(hist["Close"].iloc[-1])
+        return 1.0
+    except Exception:
+        return 1.0
 
 
 def render_currency_selector() -> tuple:
@@ -23,12 +35,11 @@ def render_currency_selector() -> tuple:
     if currency == "USD":
         return "$", 1.0
 
-    # Cache the rate in session state so we don't re-fetch on every interaction
     rate_key = f"rate_{currency}"
     if rate_key not in st.session_state:
         with st.sidebar:
             with st.spinner(f"Fetching USD/{currency} rate..."):
-                st.session_state[rate_key] = fetch_exchange_rate(currency)
+                st.session_state[rate_key] = _fetch_exchange_rate(currency)
 
     rate = st.session_state[rate_key]
     symbol = CURRENCIES[currency]["symbol"]
