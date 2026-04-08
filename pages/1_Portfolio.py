@@ -4,6 +4,7 @@ import os
 
 from src.data_fetcher import validate_ticker, fetch_ticker_info, fetch_multiple_prices
 from src.calculations import calculate_portfolio_metrics
+from src.currency import render_currency_selector
 
 st.set_page_config(page_title="Portfolio — SmartFolio", page_icon="💼", layout="wide")
 
@@ -122,6 +123,7 @@ else:
 
     metrics = calculate_portfolio_metrics(holdings, prices_data)
     holding_map = {h["ticker"]: h for h in metrics["holdings"]}
+    sym, rate = render_currency_selector()
 
     for i, h in enumerate(holdings):
         ticker = h["ticker"]
@@ -137,10 +139,10 @@ else:
             with col_price:
                 if m:
                     delta_color = "🟢" if m["daily_change_pct"] >= 0 else "🔴"
-                    st.markdown(f"**${m['current_price']:,.2f}**")
+                    st.markdown(f"**{sym}{m['current_price'] * rate:,.2f}**")
                     st.caption(
                         f"{delta_color} {m['daily_change_pct']:+.2f}% today · "
-                        f"Value: ${m['current_value']:,.2f}"
+                        f"Value: {sym}{m['current_value'] * rate:,.2f}"
                     )
                 else:
                     st.caption("Price unavailable")
@@ -151,7 +153,7 @@ else:
                     sign = "+" if m["total_return"] >= 0 else ""
                     st.markdown(
                         f"<span style='color:{colour}; font-weight:600'>"
-                        f"{sign}${m['total_return']:,.2f} ({sign}{m['total_return_pct']:.2f}%)"
+                        f"{sign}{sym}{m['total_return'] * rate:,.2f} ({sign}{m['total_return_pct']:.2f}%)"
                         f"</span>",
                         unsafe_allow_html=True,
                     )
@@ -173,13 +175,13 @@ else:
         st.markdown("### Portfolio Summary")
         c1, c2, c3 = st.columns(3)
         with c1:
-            st.metric("Total Value", f"${metrics['total_value']:,.2f}")
+            st.metric("Total Value", f"{sym}{metrics['total_value'] * rate:,.2f}")
         with c2:
-            st.metric("Total Cost Basis", f"${metrics['total_cost']:,.2f}")
+            st.metric("Total Cost Basis", f"{sym}{metrics['total_cost'] * rate:,.2f}")
         with c3:
             sign = "+" if metrics["overall_return"] >= 0 else ""
             st.metric(
                 "Overall Return",
-                f"${metrics['overall_return']:,.2f}",
+                f"{sym}{metrics['overall_return'] * rate:,.2f}",
                 delta=f"{sign}{metrics['overall_return_pct']:.2f}%",
             )

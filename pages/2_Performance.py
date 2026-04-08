@@ -13,6 +13,7 @@ from src.charts import (
     individual_performance_chart,
     candlestick_chart,
 )
+from src.currency import render_currency_selector
 
 st.set_page_config(page_title="Performance — SmartFolio", page_icon="📊", layout="wide")
 
@@ -49,6 +50,7 @@ period = st.radio(
     horizontal=True,
 )
 
+sym, rate = render_currency_selector()
 st.divider()
 
 # ── 1. Portfolio value over time ───────────────────────────────────────────────
@@ -57,22 +59,21 @@ with st.spinner("Loading portfolio history..."):
     history = calculate_historical_portfolio_value(holdings, period)
 
 if not history.empty:
-    # Key stats above the chart
     first_val = history["total_value"].iloc[0]
-    last_val = history["total_value"].iloc[-1]
-    period_return = last_val - first_val
+    last_val  = history["total_value"].iloc[-1]
+    period_return     = last_val - first_val
     period_return_pct = (period_return / first_val) * 100 if first_val != 0 else 0
 
     c1, c2, c3 = st.columns(3)
     with c1:
-        st.metric("Start of Period", f"${first_val:,.2f}")
+        st.metric("Start of Period", f"{sym}{first_val * rate:,.2f}")
     with c2:
-        st.metric("Current Value", f"${last_val:,.2f}")
+        st.metric("Current Value", f"{sym}{last_val * rate:,.2f}")
     with c3:
         sign = "+" if period_return >= 0 else ""
         st.metric(
             "Period Return",
-            f"${period_return:,.2f}",
+            f"{sym}{period_return * rate:,.2f}",
             delta=f"{sign}{period_return_pct:.2f}%",
         )
 

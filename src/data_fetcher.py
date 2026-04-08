@@ -86,6 +86,18 @@ def validate_ticker(ticker: str) -> bool:
         return False
 
 
+def fetch_exchange_rate(to_currency: str = "PKR") -> float:
+    """Fetch live exchange rate from USD to the given currency."""
+    try:
+        ticker = yf.Ticker(f"{to_currency}=X")
+        hist = ticker.history(period="2d")
+        if not hist.empty:
+            return float(hist["Close"].iloc[-1])
+        return 1.0
+    except Exception:
+        return 1.0
+
+
 def fetch_ticker_info(ticker: str) -> dict:
     """Fetch basic info (name, sector, currency) for a ticker."""
     try:

@@ -18,6 +18,7 @@ from src.charts import (
     correlation_heatmap,
     rolling_volatility_chart,
 )
+from src.currency import render_currency_selector
 
 st.set_page_config(page_title="Risk Metrics — SmartFolio", page_icon="⚠️", layout="wide")
 
@@ -47,6 +48,7 @@ if not holdings:
     st.stop()
 
 # ── Controls ───────────────────────────────────────────────────────────────────
+sym, rate = render_currency_selector()
 col_period, col_rf = st.columns([2, 2])
 with col_period:
     period = st.selectbox(
