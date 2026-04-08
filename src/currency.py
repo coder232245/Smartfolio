@@ -1,5 +1,5 @@
 import streamlit as st
-from src.data_fetcher import fetch_exchange_rate
+from .data_fetcher import fetch_exchange_rate
 
 
 CURRENCIES = {
