@@ -8,10 +8,8 @@ from src.calculations import (
     calculate_historical_portfolio_value,
     calculate_daily_returns,
     calculate_sharpe_ratio,
-    calculate_beta,
     calculate_volatility,
     calculate_max_drawdown,
-    calculate_correlation_matrix,
 )
 from src.charts import (
     daily_returns_histogram,
@@ -80,7 +78,6 @@ returns = calculate_daily_returns(history)
 
 # Compute all metrics
 sharpe    = calculate_sharpe_ratio(returns, risk_free_rate)
-beta      = calculate_beta(returns, period)
 vol       = calculate_volatility(returns)
 max_dd    = calculate_max_drawdown(history)
 mean_ret  = float(np.mean(returns.values) * 100)
@@ -90,7 +87,7 @@ worst_day = float(returns.min() * 100)
 # ── Metric cards ───────────────────────────────────────────────────────────────
 st.subheader("Key Risk Indicators")
 
-c1, c2, c3, c4 = st.columns(4)
+c1, c2, c3 = st.columns(3)
 
 with c1:
     colour = "#00C805" if sharpe >= 1.0 else ("#FFA500" if sharpe >= 0 else "#FF3B3B")
@@ -104,16 +101,8 @@ with c1:
     else:
         st.caption("🔴 Negative — worse than risk-free asset")
 
-with c2:
-    st.metric("Beta (vs S&P 500)", f"{beta:.2f}")
-    if beta < 0.8:
-        st.caption("📉 Defensive — less volatile than market")
-    elif beta <= 1.2:
-        st.caption("⚖️ Market-like — moves with the market")
-    else:
-        st.caption("📈 Aggressive — more volatile than market")
 
-with c3:
+with c2:
     st.metric("Annualised Volatility", f"{vol:.2f}%")
     if vol < 10:
         st.caption("🟢 Low volatility")
@@ -122,7 +111,7 @@ with c3:
     else:
         st.caption("🔴 High volatility")
 
-with c4:
+with c3:
     st.metric("Max Drawdown", f"{max_dd:.2f}%")
     if max_dd > -10:
         st.caption("🟢 Small drawdown")
@@ -163,26 +152,7 @@ st.plotly_chart(rolling_volatility_chart(returns, window=30), use_container_widt
 
 st.divider()
 
-# ── Correlation matrix (only if more than 1 holding) ──────────────────────────
-if len(holdings) > 1:
-    st.subheader("Asset Correlation Matrix")
-    st.caption(
-        "Values close to **+1** = assets move together (less diversification).  \n"
-        "Values close to **-1** = assets move opposite (better diversification).  \n"
-        "Values close to **0** = assets are uncorrelated."
-    )
 
-    with st.spinner("Computing correlations..."):
-        corr = calculate_correlation_matrix(holdings, period)
-
-    if not corr.empty:
-        st.plotly_chart(correlation_heatmap(corr), use_container_width=True)
-    else:
-        st.warning("Not enough data to compute correlations.")
-else:
-    st.info("Add more holdings to see the correlation matrix.")
-
-st.divider()
 
 # ── Sharpe ratio explainer ─────────────────────────────────────────────────────
 with st.expander("📖 How are these metrics calculated?"):
@@ -190,14 +160,13 @@ with st.expander("📖 How are these metrics calculated?"):
 | Metric | Formula |
 |---|---|
 | **Sharpe Ratio** | `(mean_daily_return − daily_risk_free_rate) / std(returns) × √252` |
-| **Beta** | `Cov(portfolio, S&P500) / Var(S&P500)` |
 | **Volatility** | `std(daily_returns) × √252 × 100` |
 | **Max Drawdown** | `min((value − rolling_peak) / rolling_peak) × 100` |
 
 - Risk-free rate used: **{risk_free_rate*100:.2f}%** per year → **{risk_free_rate/252*100:.4f}%** per day
 - All metrics computed over the **{period}** period using **{len(returns)}** trading days of data.
 - Daily returns: `pct_change()` on total portfolio value (pandas).
-- Covariance & std computed with **NumPy** (`np.cov`, `np.std`).
+
     """)
 
 st.caption("Data provided by Yahoo Finance via yfinance · Prices may be delayed up to 15 minutes.")
