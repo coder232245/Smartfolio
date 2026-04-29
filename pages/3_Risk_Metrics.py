@@ -13,7 +13,6 @@ from src.calculations import (
 )
 from src.charts import (
     daily_returns_histogram,
-    correlation_heatmap,
     rolling_volatility_chart,
 )
 from src.currency import render_currency_selector
