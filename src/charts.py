@@ -141,29 +141,7 @@ def daily_returns_histogram(returns: pd.Series) -> go.Figure:
     return fig
 
 
-# ── Correlation heatmap ───────────────────────────────────────────────────────
-def correlation_heatmap(corr_matrix: pd.DataFrame) -> go.Figure:
-    """Colour-coded heatmap of pairwise asset correlations."""
-    fig = go.Figure(data=go.Heatmap(
-        z=corr_matrix.values,
-        x=corr_matrix.columns.tolist(),
-        y=corr_matrix.index.tolist(),
-        colorscale="RdBu",
-        zmid=0,
-        zmin=-1,
-        zmax=1,
-        text=corr_matrix.values.round(2),
-        texttemplate="%{text}",
-        hovertemplate="<b>%{x} vs %{y}</b><br>Correlation: %{z:.3f}<extra></extra>",
-    ))
-    fig.update_layout(
-        title="Asset Correlation Matrix",
-        height=420,
-        paper_bgcolor=BG,
-        font=dict(color="#FAFAFA"),
-        margin=dict(l=10, r=10, t=50, b=10),
-    )
-    return fig
+
 
 
 # ── Rolling volatility ────────────────────────────────────────────────────────

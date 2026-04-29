@@ -67,14 +67,7 @@ def fetch_historical_data(ticker: str, period: str = "1y") -> pd.DataFrame:
         return pd.DataFrame()
 
 
-def fetch_market_benchmark(period: str = "1y") -> pd.DataFrame:
-    """Fetch S&P 500 data as the market benchmark for beta calculation."""
-    try:
-        spy = yf.Ticker("^GSPC")
-        hist = spy.history(period=period, auto_adjust=True)
-        return hist
-    except Exception:
-        return pd.DataFrame()
+
 
 
 def validate_ticker(ticker: str) -> bool:

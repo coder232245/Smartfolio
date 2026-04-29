@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.data_fetcher import fetch_historical_data, fetch_market_benchmark
+from src.data_fetcher import fetch_historical_data
 
 
 def calculate_portfolio_metrics(holdings: list, prices_data: dict) -> dict:
@@ -124,40 +124,6 @@ def calculate_sharpe_ratio(returns: pd.Series, risk_free_rate: float = 0.05) -> 
     return round(float(sharpe), 2)
 
 
-def calculate_beta(portfolio_returns: pd.Series, period: str = "1y") -> float:
-    """
-    Calculate portfolio beta relative to the S&P 500.
-
-    Formula:
-        Beta = Cov(portfolio, market) / Var(market)
-
-    A beta of 1 means the portfolio moves with the market.
-    """
-    try:
-        market_hist = fetch_market_benchmark(period)
-        if market_hist.empty:
-            return 1.0
-
-        market_returns = market_hist["Close"].pct_change().dropna()
-
-        combined = pd.DataFrame({
-            "portfolio": portfolio_returns,
-            "market": market_returns,
-        }).dropna()
-
-        if len(combined) < 10:
-            return 1.0
-
-        p = combined["portfolio"].values
-        m = combined["market"].values
-
-        cov_matrix = np.cov(p, m)            # 2x2 covariance matrix
-        beta = cov_matrix[0, 1] / cov_matrix[1, 1]
-        return round(float(beta), 2)
-
-    except Exception:
-        return 1.0
-
 
 def calculate_volatility(returns: pd.Series) -> float:
     """
@@ -191,22 +157,7 @@ def calculate_max_drawdown(portfolio_history: pd.DataFrame) -> float:
     return round(max_dd, 2)
 
 
-def calculate_correlation_matrix(holdings: list, period: str = "1y") -> pd.DataFrame:
-    """
-    Calculate the Pearson correlation matrix of daily returns between all holdings.
-    Uses pandas .corr() which internally uses numpy.
-    """
-    returns_data = {}
-    for h in holdings:
-        hist = fetch_historical_data(h["ticker"], period)
-        if not hist.empty:
-            returns_data[h["ticker"]] = hist["Close"].pct_change().dropna()
 
-    if not returns_data:
-        return pd.DataFrame()
-
-    returns_df = pd.DataFrame(returns_data).dropna()
-    return returns_df.corr().round(3)
 
 
 def calculate_individual_returns(holdings: list, period: str = "1y") -> pd.DataFrame:
